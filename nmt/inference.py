@@ -18,6 +18,7 @@ from __future__ import print_function
 
 import codecs
 import time
+import os 
 
 import tensorflow as tf
 
@@ -118,6 +119,56 @@ def inference(ckpt,
         num_workers=num_workers,
         jobid=jobid)
 
+def export_model(sess, predictions, hparams):
+  export_path = os.path.join(hparams.export_path, str(hparams.export_version))
+  builder = tf.saved_model.builder.SavedModelBuilder(export_path)
+  #
+  inputs_tensor = [predictions['input'], predictions['batch_size']]
+  inputs_tag = ['input', 'batch_size']
+  #
+  inputs_dict = {}
+  for tensor, name in zip(inputs_tensor, inputs_tag):
+    tensor = tf.saved_model.utils.build_tensor_info(tensor)
+    inputs_dict[name] = tensor
+
+  outputs_dict = {'output'   : tf.saved_model.utils.build_tensor_info(predictions['output'])
+                  }
+  initializer_dict = {
+                  'init_tensor': tf.saved_model.utils.build_tensor_info(predictions['initializer'])
+  }
+
+  prediction_signature_outputs = tf.saved_model.signature_def_utils.build_signature_def(
+    inputs=inputs_dict,
+    outputs=outputs_dict,
+    method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME)
+
+  prediction_signature_initializer = tf.saved_model.signature_def_utils.build_signature_def(
+    inputs=inputs_dict,
+    outputs=initializer_dict,
+    method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME)
+
+
+  assets = [tf.constant(hparams.src_vocab_file),
+           tf.constant(hparams.tgt_vocab_file)]
+
+  for asset in assets:
+    tf.add_to_collection(tf.GraphKeys.ASSET_FILEPATHS, asset)
+
+  legacy_init_op = tf.group(tf.tables_initializer(), name='legacy_init_op')
+
+  builder.add_meta_graph_and_variables(
+      sess, [tf.saved_model.tag_constants.SERVING],
+      signature_def_map={
+          'generate':
+              prediction_signature_outputs,
+          'initialize':
+              prediction_signature_initializer
+      },
+      assets_collection=tf.get_collection(tf.GraphKeys.ASSET_FILEPATHS),
+      legacy_init_op=legacy_init_op,
+      clear_devices=True)
+  builder.save()
+  utils.print_out("Done exporting")
 
 def single_worker_inference(infer_model,
                             ckpt,
@@ -140,6 +191,21 @@ def single_worker_inference(infer_model,
             infer_model.src_placeholder: infer_data,
             infer_model.batch_size_placeholder: hparams.infer_batch_size
         })
+
+    # Export model
+    predictions ={}
+    predictions['input'] = infer_model.src_placeholder
+    predictions['batch_size'] = infer_model.batch_size_placeholder
+    predictions['initializer'] = infer_model.iterator.initializer
+    predictions['output'] = infer_model.model.sample_words
+    #construct initializer tensor
+    with tf.control_dependencies([predictions['initializer']]):
+      predictions['initializer'] = tf.identity(predictions['input'])
+    if hparams.export:
+      utils.print_out("# Start exporting")
+      export_model(sess, predictions, hparams)
+      exit(0)  
+
     # Decode
     utils.print_out("# Start decoding")
     if hparams.inference_indices:

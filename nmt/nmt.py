@@ -285,7 +285,15 @@ def add_arguments(parser):
                       help="number of inter_op_parallelism_threads")
   parser.add_argument("--num_intra_threads", type=int, default=0,
                       help="number of intra_op_parallelism_threads")
+  # export model
+  parser.add_argument("--export_model", type=bool, default=False,
+                      help="Is exporting model.")
 
+  parser.add_argument("--export_path", type=str, default=None,
+                      help="export model path.")
+
+  parser.add_argument("--export_version", type=int, default=0,
+                      help="export model version.")
 
 def create_hparams(flags):
   """Create training hparams."""
@@ -389,7 +397,6 @@ def extend_hparams(hparams):
     raise ValueError("For gnmt attention architecture, "
                      "num_encoder_layers %d should be >= 2" %
                      hparams.num_encoder_layers)
-
   # Set residual layers
   num_encoder_residual_layers = 0
   num_decoder_residual_layers = 0
@@ -560,6 +567,11 @@ def run_main(flags, default_hparams, train_fn, inference_fn, target_session=""):
   # Load hparams.
   hparams = create_or_load_hparams(
       out_dir, default_hparams, flags.hparams_path, save_hparams=(jobid == 0))
+  
+  # load export hparams
+  hparams.add_hparam("export", flags.export_model)
+  hparams.add_hparam("export_path", flags.export_path)
+  hparams.add_hparam("export_version", flags.export_version)
 
   if flags.inference_input_file:
     # Inference indices

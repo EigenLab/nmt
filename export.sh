@@ -1,0 +1,1 @@
+python -m nmt.nmt  --inference_input_file=/data/xueyou/textsum/data/test.source --inference_output_file=/tmp/tmp.test --out_dir=/data/xueyou/textsum/data/wx_gnmt/best_rouge/ --export_path=/data/xueyou/textsum/data/export_wx_gnmt --export_model=True --export_version=0
