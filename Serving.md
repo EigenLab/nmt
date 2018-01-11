@@ -10,3 +10,7 @@
 - 导出后就可以用了。使用的实例可以参见surreal/generate/jobs_desc_gen.py代码，会有两次predict操作。
 - serving目前的最新版本是1.4，可以直接安装binary
 
+### 问题
+还有一些问题
+- 在使用batch的时候，出现到了out of range的问题
+

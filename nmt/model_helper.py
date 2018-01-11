@@ -94,7 +94,9 @@ def create_train_model(
         random_seed=hparams.random_seed,
         num_buckets=hparams.num_buckets,
         src_max_len=hparams.src_max_len,
+        src_min_len=hparams.src_min_len,
         tgt_max_len=hparams.tgt_max_len,
+        tgt_min_len=hparams.tgt_min_len,
         skip_count=skip_count_placeholder,
         num_shards=num_workers,
         shard_index=jobid)

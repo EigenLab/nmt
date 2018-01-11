@@ -176,6 +176,10 @@ def add_arguments(parser):
                       help="Max length of src sequences during training.")
   parser.add_argument("--tgt_max_len", type=int, default=50,
                       help="Max length of tgt sequences during training.")
+  parser.add_argument("--src_min_len", type=int, default=0,
+                      help="Min length of src sequences during training.")
+  parser.add_argument("--tgt_min_len", type=int, default=0,
+                      help="Min length of tgt sequences during training.")
   parser.add_argument("--src_max_len_infer", type=int, default=None,
                       help="Max length of src sequences during inference.")
   parser.add_argument("--tgt_max_len_infer", type=int, default=None,
@@ -344,6 +348,8 @@ def create_hparams(flags):
       max_train=flags.max_train,
       src_max_len=flags.src_max_len,
       tgt_max_len=flags.tgt_max_len,
+      src_min_len=flags.src_min_len,
+      tgt_min_len=flags.tgt_min_len,
 
       # Inference
       src_max_len_infer=flags.src_max_len_infer,

@@ -85,7 +85,9 @@ def get_iterator(src_dataset,
                  random_seed,
                  num_buckets,
                  src_max_len=None,
+                 src_min_len=1,
                  tgt_max_len=None,
+                 tgt_min_len=1,
                  num_parallel_calls=4,
                  output_buffer_size=None,
                  skip_count=None,
@@ -114,7 +116,7 @@ def get_iterator(src_dataset,
 
   # Filter zero length input sequences.
   src_tgt_dataset = src_tgt_dataset.filter(
-      lambda src, tgt: tf.logical_and(tf.size(src) > 0, tf.size(tgt) > 0))
+      lambda src, tgt: tf.logical_and(tf.size(src) > src_min_len, tf.size(tgt) > tgt_min_len))
 
   if src_max_len:
     src_tgt_dataset = src_tgt_dataset.map(
