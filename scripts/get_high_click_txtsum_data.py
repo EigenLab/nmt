@@ -85,7 +85,7 @@ def worker_fashion_web(name,texts):
             for s in get_sentences(headline,item['content']):
                 content.extend(s)
 
-            if content and len(content)>=50:
+            if content and len(content)>=100:
                 hds, hstyle = get_headline(headline)
                 if len(hds) >= 3 and len(hds)<=60:
                     headlines.append(hds)
@@ -94,7 +94,6 @@ def worker_fashion_web(name,texts):
         cnt += 1
         if cnt % 1000 == 0:
             print("{0} processed {1} articles".format(name,cnt))
-            break
     print("finish processing {0} with articles {1}".format(name,len(headlines)))
     return (headlines,articles)
 
@@ -129,7 +128,7 @@ def worker_file(fname, n, h, c, a=None, tmall=False):
                 for x in get_sentences(headline,tokens[c].replace("<para>","\n"), tokens[a] if a else None):
                     content.extend(x)
                 # remove content with too few words: 50
-                if content and len(content)>=50 :
+                if content and len(content)>=100 :
                     hds, hstyle = get_headline(headline)
                     # remove headline with too few words: 3
                     if len(hds) >= 3 and len(hds)<=60:
@@ -139,7 +138,6 @@ def worker_file(fname, n, h, c, a=None, tmall=False):
         cnt += 1
         if cnt % 1000 == 0:
             print("{0} processed {1} articles".format(fname,cnt))
-            break
     print("finish processing file {0} with articles {1}".format(fname,len(headlines)))
     return (headlines,articles)
 
@@ -198,14 +196,13 @@ if __name__ == "__main__":
 
     print("start to process tmall articles")
     #hds,cts = worker_file("/data/xueyou/fashion/data/tmall_articles/000069_0",7,3,2,1,True)
-    
     for filename in glob.glob("/data/xueyou/fashion/data/tmall_articles/*_0"):
         pool.apply_async(worker_file,(filename,7,3,2,1,True),callback=write_callback)
 
     print("start to process taobao headline articles")
     #hds,cts = worker_file("/data/xueyou/fashion/data/taobao_headline_0326/000000_0",15,1,3,None,False)
     for filename in glob.glob("/data/xueyou/fashion/data/taobao_headline_0326/*_0"):
-        pool.apply_async(worker_file,(filename,14,1,4,None,False),callback=write_callback)
+        pool.apply_async(worker_file,(filename,15,1,4,None,False),callback=write_callback)
         
     pool.close()
     pool.join()
