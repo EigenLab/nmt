@@ -4,7 +4,7 @@ import random
 import os
 from tqdm import tqdm
 
-def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
+def shuffle_big_files(filenames, line_cnt = None, chunk_size = 500000):
     '''
     Provide a method to random shuffle big files, the content of the files should be seperated by line.
     Args:
@@ -17,7 +17,7 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
         - new list of filenames ends with .shuffle
     '''
     s = time.time()
-    
+    print("start to shuffle {0}".format(filenames))
     if not isinstance(filenames, list):
         filenames = [filenames]
     
@@ -26,7 +26,7 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
             raise ArgumentError("file {0} not exists".format(fname))
     
     if line_cnt is None:
-        line_cnt = sum(1 for line in open(filenames[0]))
+        line_cnt = sum(1 for line in tqdm(open(filenames[0])))
     
     print("shuffling {0} lines of {1} files...".format(line_cnt,len(filenames)))
     
@@ -60,7 +60,7 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
             fp.write(line + '\n')
     
     def shuffle_and_write(chunk, dirname):
-        print("readed {0} lines, shuffle and write to temp file".format(chunk_size))
+        print("readed {0} lines, shuffle and write to temp file".format(len(chunk)))
         chunk = random_permutation(chunk)
         tmp_fp = tempfile.TemporaryFile(mode="w+",dir=dirname)
         write_to_file(chunk,tmp_fp)
@@ -73,8 +73,10 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
         fps = []
         chunk = []
         print("read lines from files...")
+        cnt = 0
         for line in tqdm(read_files(filenames)):
             chunk.append(line)
+            cnt += 1
             if len(chunk) == chunk_size:
                 tmp_fp = shuffle_and_write(chunk, dirname)
                 fps.append(tmp_fp)
@@ -82,6 +84,7 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
         if len(chunk) > 0:
             tmp_fp = shuffle_and_write(chunk, dirname)
             fps.append(tmp_fp)
+        print("read {0} lines".format(cnt))
         return fps
     
        
@@ -94,6 +97,7 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
                 line = f.readline()
                 if not line:
                     empty_fps.append(i)
+                    print("temp file {0} is empty".format(i))
                     continue
                 small_chunk.append(line.rstrip('\n'))
             return empty_fps
@@ -102,9 +106,11 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
             empty_fps = read_small_chunk()
             fps = [f for i,f in enumerate(fps) if i not in empty_fps]
             if len(small_chunk) >= chunk_size:
+                print("read one chunck with size {0}".format(len(small_chunk)))
                 yield small_chunk
-                chunk = []
+                small_chunk = []
         if len(small_chunk) != 0:
+            print("final chunk with size {0}".format(len(small_chunk)))
             yield small_chunk
         
     # merge
@@ -113,16 +119,19 @@ def shuffle_big_files(filenames, line_cnt = None, chunk_size = 1000000):
         out_files = [open(fname + '.shuffle','w') for fname in filenames]
         for chunk in read_chunk_from_temp_files(fps):
             chunk = random_permutation(chunk)
+            print("write chunk data with size {0} to file".format(len(chunk)))
             for line in chunk:
                 tokens = line.split('\x01')
                 if len(tokens) != len(filenames):
                     continue
                 for i,token in enumerate(tokens):
                     out_files[i].write(token + '\n')
+            print("finish writting one chunk")
         for f in out_files:
             f.close()
             
     fps = split_file_into_chunks(filenames)
+    print("generate {0} temp files".format(len(fps)))
     merge_chunks_into_files(fps)
     e = time.time()
     print("finish shuffling in {0} secs".format(e-s))

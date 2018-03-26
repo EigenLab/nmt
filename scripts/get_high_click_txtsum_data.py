@@ -202,7 +202,7 @@ if __name__ == "__main__":
     print("start to process taobao headline articles")
     #hds,cts = worker_file("/data/xueyou/fashion/data/taobao_headline_0326/000000_0",15,1,3,None,False)
     for filename in glob.glob("/data/xueyou/fashion/data/taobao_headline_0326/*_0"):
-        pool.apply_async(worker_file,(filename,15,1,4,None,False),callback=write_callback)
+        pool.apply_async(worker_file,(filename,15,1,3,None,False),callback=write_callback)
         
     pool.close()
     pool.join()
@@ -212,6 +212,8 @@ if __name__ == "__main__":
 
     print("shuffle training data")
     source_file_name,target_file_name = shuffle_big_files([source_file_name,target_file_name])
+    #source_file_name = "/data/xueyou/textsum/headline/source.txt.shuffle"
+    #target_file_name = "/data/xueyou/textsum/headline/source.txt.shuffle"
 
     print("process file to get vocab and statistics of data")
     title_count = Counter()
@@ -232,9 +234,9 @@ if __name__ == "__main__":
                 cnt = 0
                 while s and t:
                     s,t = process_line(s),process_line(t)
-                    if s not in title_set:
-                        title_set.add(s)
-                        yield cnt,s,t
+                    #if s not in title_set:
+                        #title_set.add(s)
+                    yield cnt,s,t
                     cnt += 1
                     s,t = sf.readline(),tf.readline()
         print("Done read data with size {0}".format(cnt))
@@ -278,7 +280,7 @@ if __name__ == "__main__":
         word_count.update(content)
         word_count.update(title)
     
-    pickle.dump({"title_count":title_count,"content_count":content_count,"word_count":word_count,"style_count":style_count},open("/data/xueyou/textsum/data/count.pkl",'wb'))
+    pickle.dump({"title_count":title_count,"content_count":content_count,"word_count":word_count,"style_count":style_count},open("/data/xueyou/textsum/headline/count.pkl",'wb'))
     
     train_sf.close()
     train_tf.close()
