@@ -299,6 +299,12 @@ def add_arguments(parser):
   parser.add_argument("--export_version", type=int, default=0,
                       help="export model version.")
 
+  # scheduled sampling 
+  parser.add_argument("--scheduled_sampling", type=bool, default=False,
+                      help='whether using scheduled sampling')
+  parser.add_argument("--start_scheduled_sampling_ratio", type=float, default=0.2,
+                      help='when to start scheduled sampling')
+
 def create_hparams(flags):
   """Create training hparams."""
   return tf.contrib.training.HParams(
@@ -381,6 +387,10 @@ def create_hparams(flags):
       avg_ckpts=flags.avg_ckpts,
       num_intra_threads=flags.num_intra_threads,
       num_inter_threads=flags.num_inter_threads,
+
+      # Scheduled sampling
+      scheduled_sampling = flags.scheduled_sampling,
+      start_scheduled_sampling_ratio = flags.start_scheduled_sampling_ratio,
   )
 
 

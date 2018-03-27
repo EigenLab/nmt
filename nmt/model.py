@@ -105,6 +105,8 @@ class BaseModel(object):
         self.output_layer = layers_core.Dense(
             hparams.tgt_vocab_size, use_bias=False, name="output_projection")
 
+    self.global_step = tf.Variable(0, trainable=False)
+
     ## Train graph
     res = self.build_graph(hparams, scope=scope)
 
@@ -125,7 +127,6 @@ class BaseModel(object):
       self.predict_count = tf.reduce_sum(
           self.iterator.target_sequence_length)
 
-    self.global_step = tf.Variable(0, trainable=False)
     params = tf.trainable_variables()
 
     # Gradients and SGD update operation for training the model.
@@ -161,7 +162,8 @@ class BaseModel(object):
       self.train_summary = tf.summary.merge([
           tf.summary.scalar("lr", self.learning_rate),
           tf.summary.scalar("train_loss", self.train_loss),
-      ] + grad_norm_summary)
+      ] + [tf.summary.scalar("scheduled_sample_ratio",self.scheduled_sampling_prob)] if hparams.scheduled_sampling else [] +
+      grad_norm_summary)
 
     if self.mode == tf.contrib.learn.ModeKeys.INFER:
       self.infer_summary = self._get_infer_summary(hparams)
@@ -200,6 +202,17 @@ class BaseModel(object):
         lambda: inv_decay * self.learning_rate,
         lambda: self.learning_rate,
         name="learning_rate_warump_cond")
+
+  def _get_scheduled_sampling(self, hparams):
+    # Linear scheduled sampling
+    start_scheduled_sampling_step = int(hparams.start_scheduled_sampling_ratio * hparams.num_train_steps)
+    utils.print_out(" start scheduled sampling step=%s" % (start_scheduled_sampling_step))
+    return tf.cond(
+      self.global_step < start_scheduled_sampling_step,
+      lambda: tf.constant(0.0,dtype=tf.float64),
+      lambda: (self.global_step - start_scheduled_sampling_step) / (hparams.num_train_steps - start_scheduled_sampling_step),
+      name="scheduled_sampling_cond"
+    )
 
   def _get_learning_rate_decay(self, hparams):
     """Get learning rate decay."""
@@ -393,9 +406,17 @@ class BaseModel(object):
             self.embedding_decoder, target_input)
 
         # Helper
-        helper = tf.contrib.seq2seq.TrainingHelper(
-            decoder_emb_inp, iterator.target_sequence_length,
-            time_major=self.time_major)
+        if hparams.scheduled_sampling:
+          self.scheduled_sampling_prob = self._get_scheduled_sampling(hparams)
+          helper = tf.contrib.seq2seq.ScheduledEmbeddingTrainingHelper(
+              decoder_emb_inp, iterator.target_sequence_length,
+              self.embedding_decoder, self.scheduled_sampling_prob,
+              time_major = self.time_major
+            )
+        else:
+          helper = tf.contrib.seq2seq.TrainingHelper(
+              decoder_emb_inp, iterator.target_sequence_length,
+              time_major=self.time_major)
 
         # Decoder
         my_decoder = tf.contrib.seq2seq.BasicDecoder(
