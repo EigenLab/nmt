@@ -13,7 +13,13 @@
 
 ## 更新
 - 2018-03-27
-  - 添加了scheduled sampling机制，目前只支持linear的sampling，也即随着训练过程不断提高sampling的ratio。我在vi-en上做了一些试验，发现如果采用了sampling的话，需要增加training steps，而且最好等模型先train一段时间后再引入sampling。
+
+  - 添加了scheduled sampling机制，目前只支持linear的sampling，也即随着训练过程不断提高sampling的ratio。我在vi-en上做了一些试验，发现如果采用了sampling的话，需要增加training steps，而且最好等模型先train一段时间后再引入sampling。
+  - 下面是使用bash总train_scheduled_sampling脚本得到的vi-en结果：
+  
+  ```
+  Best bleu, step 17000 lr 0.0625 step-time 0.69s wps 8.14K ppl 25.53 gN 10.88 dev ppl 40.25, dev bleu 20.5, test ppl 37.53, test bleu 22.9, Wed Mar 28 13:44:09 2018
+  ```
 
 *Authors: Thang Luong, Eugene Brevdo, Rui Zhao ([Google Research Blogpost](https://research.googleblog.com/2017/07/building-your-own-neural-machine.html), [Github](https://github.com/tensorflow/nmt))*
 
