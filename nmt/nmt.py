@@ -585,9 +585,10 @@ def run_main(flags, default_hparams, train_fn, inference_fn, target_session=""):
       out_dir, default_hparams, flags.hparams_path, save_hparams=(jobid == 0))
   
   # load export hparams
-  hparams.add_hparam("export", flags.export_model)
-  hparams.add_hparam("export_path", flags.export_path)
-  hparams.add_hparam("export_version", flags.export_version)
+  if flags.export_model:
+    hparams.add_hparam("export", flags.export_model)
+    hparams.add_hparam("export_path", flags.export_path)
+    hparams.add_hparam("export_version", flags.export_version)
 
   if flags.inference_input_file:
     # Inference indices
