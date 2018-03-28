@@ -1,5 +1,20 @@
 # Neural Machine Translation (seq2seq) Tutorial
 
+
+## 说明（很重要）
+
+这是fork google的nmt项目，这个项目主要的目标就是提供通用的seq2seq的训练框架，任何sequence to sequence任务都可以使用本框架进行训练。由于tf的版本不兼容问题，请大家一定要注意！本项目是**基于tf-1.4版本**，**基于tf-1.4版本**，**基于tf-1.4版本**，任何由于版本问题造成的各种异常错误，请先把你的tf版本改为1.4的版本。
+
+这个项目的代码组织的很合理，任何想要自己实现s2s的同学都可以参考这个项目的代码。 我希望大家能够在这个项目的基础上不断提交新的s2s结构，如copy-net，point-net等。任何关于模型的更新都请在下一节中添加说明。
+
+## 保证你的tf版本为1.4！！！！！！
+## 保证你的tf版本为1.4！！！！！！
+## 保证你的tf版本为1.4！！！！！！
+
+## 更新
+- 2018-03-27
+  - 添加了scheduled sampling机制，目前只支持linear的sampling，也即随着训练过程不断提高sampling的ratio。我在vi-en上做了一些试验，发现如果采用了sampling的话，需要增加training steps，而且最好等模型先train一段时间后再引入sampling。
+
 *Authors: Thang Luong, Eugene Brevdo, Rui Zhao ([Google Research Blogpost](https://research.googleblog.com/2017/07/building-your-own-neural-machine.html), [Github](https://github.com/tensorflow/nmt))*
 
 *This version of the tutorial requires [TensorFlow Nightly](https://github.com/tensorflow/tensorflow/#installation).
