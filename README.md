@@ -20,7 +20,11 @@
   ```
   Best bleu, step 17000 lr 0.0625 step-time 0.69s wps 8.14K ppl 25.53 gN 10.88 dev ppl 40.25, dev bleu 20.5, test ppl 37.53, test bleu 22.9, Wed Mar 28 13:44:09 2018
   ```
-
+  - 如果使用原始的训练脚本，得到的结果为。可以发现，原始的效果要好1-2个点
+	```
+	Best bleu, step 19000 lr 0.0625 step-time 0.36s wps 15.69K ppl 3.44 gN 6.27 dev ppl 11.60, dev bleu 21.1, test ppl 9.74, test bleu 24.0, Wed Mar 28 16:49:11 2018
+	```
+  
 *Authors: Thang Luong, Eugene Brevdo, Rui Zhao ([Google Research Blogpost](https://research.googleblog.com/2017/07/building-your-own-neural-machine.html), [Github](https://github.com/tensorflow/nmt))*
 
 *This version of the tutorial requires [TensorFlow Nightly](https://github.com/tensorflow/tensorflow/#installation).
