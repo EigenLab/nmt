@@ -26,6 +26,7 @@ import time
 
 import numpy as np
 import tensorflow as tf
+from nmt.utils import send_to_dingding
 
 
 def check_tensorflow_version():
@@ -50,7 +51,7 @@ def print_time(s, start_time):
   return time.time()
 
 
-def print_out(s, f=None, new_line=True):
+def print_out(s, f=None, new_line=True, ding=False):
   """Similar to print but with support to flush and output to a file."""
   if isinstance(s, bytes):
     s = s.decode("utf-8")
@@ -64,6 +65,9 @@ def print_out(s, f=None, new_line=True):
   out_s = s.encode("utf-8")
   if not isinstance(out_s, str):
     out_s = out_s.decode("utf-8")
+  
+  if ding:
+    send_to_dingding(out_s)
   print(out_s, end="", file=sys.stdout)
 
   if new_line:

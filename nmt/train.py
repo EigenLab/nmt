@@ -29,6 +29,7 @@ from . import model as nmt_model
 from . import model_helper
 from .utils import misc_utils as utils
 from .utils import nmt_utils
+from .utils import send_to_dingding
 
 utils.check_tensorflow_version()
 
@@ -224,7 +225,8 @@ def print_step_info(prefix, global_step, info, result_summary, log_f):
       (prefix, global_step, info["learning_rate"], info["avg_step_time"],
        info["speed"], info["train_ppl"], info["avg_grad_norm"], result_summary,
        time.ctime()),
-      log_f)
+      log_f,
+      ding=True)
 
 
 def process_stats(stats, info, global_step, steps_per_stats, log_f):

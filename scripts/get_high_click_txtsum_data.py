@@ -151,6 +151,7 @@ def write_callback(data):
     
 if __name__ == "__main__":
     words = set()
+    data_dir_prefix = "/data/xueyou/textsum/headline/fashion_finetune/"
             
     # 添加词表
     fashion_words = pickle.load(open("/data/xueyou/fashion/sku/fashion_words.0302.pkl",'rb'))
@@ -174,25 +175,25 @@ if __name__ == "__main__":
     for w in words:
         jieba.add_word(w)
     
-    source_file_name = "/data/xueyou/textsum/headline/source.txt"
+    source_file_name = data_dir_prefix + "source.txt"
     source_file = open(source_file_name,'w')
     
-    target_file_name = "/data/xueyou/textsum/headline/target.txt"
+    target_file_name = data_dir_prefix + "target.txt"
     target_file = open(target_file_name,'w')
     
-    pool = mp.Pool(processes = 20)
+    pool = mp.Pool(processes = 6)
 
-    fashion_web_articles = pickle.load(open('/data/xueyou/fashion/sku/articles/fashion_web_articles.1122.pkl','rb'))
     print("start to process fashion web articles")
     # test
     #hds,cts = worker_fashion_web("fashion_web_articles" ,fashion_web_articles)
-    pool.apply_async(worker_fashion_web,("fashion_web_articles" ,fashion_web_articles),callback=write_callback)
+    #fashion_web_articles = pickle.load(open('/data/xueyou/fashion/sku/articles/fashion_web_articles.1122.pkl','rb'))
+    #pool.apply_async(worker_fashion_web,("fashion_web_articles" ,fashion_web_articles),callback=write_callback)
     
     print("start to process weixin high click articles")
     # test
     #hds,cts = worker_file("/data/xueyou/textsum/data/weixin_click8k_like80_len150_2017/000000_0",6,1,5,2,False)
-    for filename in glob.glob('/data/xueyou/textsum/data/weixin_click8k_like80_len150_2017/*_0'):
-        pool.apply_async(worker_file,(filename,6,1,5,2,False),callback=write_callback)
+    #for filename in glob.glob('/data/xueyou/textsum/data/weixin_click8k_like80_len150_2017/*_0'):
+    #    pool.apply_async(worker_file,(filename,6,1,5,2,False),callback=write_callback)
 
     print("start to process tmall articles")
     #hds,cts = worker_file("/data/xueyou/fashion/data/tmall_articles/000069_0",7,3,2,1,True)
@@ -201,8 +202,8 @@ if __name__ == "__main__":
 
     print("start to process taobao headline articles")
     #hds,cts = worker_file("/data/xueyou/fashion/data/taobao_headline_0326/000000_0",15,1,3,None,False)
-    for filename in glob.glob("/data/xueyou/fashion/data/taobao_headline_0326/*_0"):
-        pool.apply_async(worker_file,(filename,15,1,3,None,False),callback=write_callback)
+    for filename in glob.glob("/data/xueyou/fashion/data/taobao_headline_0412/*_0"):
+        pool.apply_async(worker_file,(filename,18,1,3,None,False),callback=write_callback)
         
     pool.close()
     pool.join()
@@ -241,16 +242,16 @@ if __name__ == "__main__":
                     s,t = sf.readline(),tf.readline()
         print("Done read data with size {0}".format(cnt))
     
-    train_sf = open("/data/xueyou/textsum/headline/train.source",'w')
-    train_tf = open("/data/xueyou/textsum/headline/train.target",'w')
+    train_sf = open(data_dir_prefix + "train.source",'w')
+    train_tf = open(data_dir_prefix + "train.target",'w')
     # 10000
     dev_cnt = 10000
-    dev_sf = open("/data/xueyou/textsum/headline/dev.source",'w')
-    dev_tf = open("/data/xueyou/textsum/headline/dev.target",'w')
+    dev_sf = open(data_dir_prefix + "dev.source",'w')
+    dev_tf = open(data_dir_prefix + "dev.target",'w')
     # 10000
     test_cnt = 10000
-    test_sf = open("/data/xueyou/textsum/headline/test.source",'w')
-    test_tf = open("/data/xueyou/textsum/headline/test.target",'w')
+    test_sf = open(data_dir_prefix + "test.source",'w')
+    test_tf = open(data_dir_prefix + "test.target",'w')
     
     
     for i,rcontent,rtitle in tqdm(get_st()):
@@ -280,7 +281,7 @@ if __name__ == "__main__":
         word_count.update(content)
         word_count.update(title)
     
-    pickle.dump({"title_count":title_count,"content_count":content_count,"word_count":word_count,"style_count":style_count},open("/data/xueyou/textsum/headline/count.pkl",'wb'))
+    pickle.dump({"title_count":title_count,"content_count":content_count,"word_count":word_count,"style_count":style_count},open(data_dir_prefix + "count.pkl",'wb'))
     
     train_sf.close()
     train_tf.close()
@@ -313,7 +314,7 @@ if __name__ == "__main__":
         word2id[w] = len(word2id)
     
     print("write vocab to file with size:",len(word2id))
-    with open("/data/xueyou/textsum/headline/vocab.250000.txt",'w') as f:
+    with open(data_dir_prefix + "vocab.250000.txt",'w') as f:
         words = sorted(word2id,key=lambda x:word2id[x])
         for w in words:
             f.write(w)
