@@ -24,3 +24,10 @@ model path:
 dev ppl 13.60, dev bleu 3.7, dev rouge 13.8, test ppl 12.48, test bleu 3.9, test rouge 13.9
 ```
 
+## Finetune
+
+关于finetune，目前我采用的方法是：
+- 将模型copy到新的目录下，修改checkpoint文件指向新的路径
+- 修改hparams的参数，将train,test和dev的文件目录修改，train_steps提高，vocab保持原来的文件目录
+- 修改outputdir，best\_bleu和best\_rouge目录指向新路径
+- 其他保持不变，然后重新训练
