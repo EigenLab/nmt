@@ -586,9 +586,11 @@ def run_main(flags, default_hparams, train_fn, inference_fn, target_session=""):
   
   # load export hparams
   if flags.export_model:
-    hparams.add_hparam("export", flags.export_model)
-    hparams.add_hparam("export_path", flags.export_path)
-    hparams.add_hparam("export_version", flags.export_version)
+    def add_or_set(name,value):
+        hparams.set_hparam(name,value)
+    add_or_set("export", flags.export_model)
+    add_or_set("export_path", flags.export_path)
+    add_or_set("export_version", flags.export_version)
 
   if flags.inference_input_file:
     # Inference indices
