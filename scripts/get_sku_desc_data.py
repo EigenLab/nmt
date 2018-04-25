@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 print("loading data from pkl file")
 
-data = pickle.load(open("/data/xueyou/fashion/data/sku_desc/sku_desc.0408.pkl",'rb'))
+data = pickle.load(open("/data/xueyou/fashion/data/sku_desc/sku_desc.0424.pkl",'rb'))
 
 print("raw data size:",len(data))
 
