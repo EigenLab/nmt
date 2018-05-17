@@ -12,11 +12,18 @@ with open("/data/xueyou/car/car_slot_data/data_char_level.txt") as f:
         if len(tokens)==2:
             data.append(tuple(tokens))
 
+headlines = []
+with open("/data/xueyou/car/car_slot_data/raw_headlines.txt") as f:
+    for line in f:
+        headlines.append(line.strip())
+
 data_with_slots = []
 with open('/data/xueyou/car/car_slot_data/content_slots.txt') as f:
     for i,line in enumerate(f):
         slots = line.strip().split("\x01")
-        data_with_slots.append({"data":data[i],'slots':slots})
+        data_with_slots.append({"data":data[i],'slots':slots,'headline':headlines[i]})
+
+    
 
 print("data size",len(data_with_slots))
 print("filter with length")
@@ -85,11 +92,13 @@ def write_data_to_file(out_data,prefix):
     with open(prefix_dir + prefix + ".source",'w') as sf:
         with open(prefix_dir + prefix + ".target",'w') as tf:
             with open(prefix_dir + prefix + '.slots', 'w') as slot_f:
-                for item in out_data:
-                    s,t = item['data']
-                    sf.write(s + '\n')
-                    tf.write(t + '\n')
-                    slot_f.write("\x01".join(item['slots']) + '\n')
+                with open(prefix_dir + prefix + '.headline','w') as hf:
+                    for item in out_data:
+                        s,t = item['data']
+                        sf.write(s + '\n')
+                        tf.write(t + '\n')
+                        slot_f.write("\x01".join(item['slots']) + '\n')
+                        hf.write(item['headline'] + '\n')
 
 
 print("write training data to file with size:",len(train))

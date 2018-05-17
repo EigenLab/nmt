@@ -596,6 +596,7 @@ def run_main(flags, default_hparams, train_fn, inference_fn, target_session=""):
 
   if flags.inference_input_file:
     # Inference indices
+    add_or_set("num_translations_per_input", flags.num_translations_per_input)
     hparams.inference_indices = None
     if flags.inference_list:
       (hparams.inference_indices) = (
