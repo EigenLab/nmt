@@ -12,12 +12,18 @@ with open("/data/xueyou/car/car_slot_data/data_char_level.txt") as f:
         if len(tokens)==2:
             data.append(tuple(tokens))
 
+data_with_slots = []
+with open('/data/xueyou/car/car_slot_data/content_slots.txt') as f:
+    for i,line in enumerate(f):
+        slots = line.strip().split("\x01")
+        data_with_slots.append({"data":data[i],'slots':slots})
 
-print("data size",len(data))
+print("data size",len(data_with_slots))
 print("filter with length")
-data = [item for item in data if len(item[0].split()) >= 10]
-print("data size",len(data))
+data_with_slots = [item for item in data_with_slots if len(item['data'][0].split()) >= 10]
+print("data size",len(data_with_slots))
 
+data = data_with_slots
 random.shuffle(data)
 
 train = data[:-1000]
@@ -38,7 +44,8 @@ def stats(lens):
 s_lens = []
 t_lens = []
 
-for s,t in train:
+for item in train:
+    s,t = item['data']
     s_lens.append(len(s.split()))
     t_lens.append(len(t.split()))
 
@@ -49,7 +56,8 @@ stats(t_lens)
 
 word_cnt = Counter()
 
-for s,t in train:
+for item in train:
+    s,t = item['data']
     word_cnt.update(s.split())
     word_cnt.update(t.split())
 
@@ -76,9 +84,13 @@ with open(prefix_dir + "vocab.source",'w') as sf:
 def write_data_to_file(out_data,prefix):
     with open(prefix_dir + prefix + ".source",'w') as sf:
         with open(prefix_dir + prefix + ".target",'w') as tf:
-            for s,t in out_data:
-                sf.write(s + '\n')
-                tf.write(t + '\n')
+            with open(prefix_dir + prefix + '.slots', 'w') as slot_f:
+                for item in out_data:
+                    s,t = item['data']
+                    sf.write(s + '\n')
+                    tf.write(t + '\n')
+                    slot_f.write("\x01".join(item['slots']) + '\n')
+
 
 print("write training data to file with size:",len(train))
 write_data_to_file(train,"train") 

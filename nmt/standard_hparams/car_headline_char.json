@@ -11,7 +11,7 @@
   "metrics": ["bleu","rouge"],
   "num_buckets": 2,
   "num_layers": 2,
-  "num_train_steps": 8000,
+  "num_train_steps": 6000,
   "decay_scheme": "luong234",
   "num_units": 128,
   "optimizer": "adam",
