@@ -20,7 +20,7 @@
   "src_max_len": 70,
   "src_max_len_infer": null,
   "steps_per_external_eval": null,
-  "steps_per_stats": 10,
+  "steps_per_stats": 100,
   "tgt_max_len": 20,
   "tgt_max_len_infer": null,
   "time_major": true,

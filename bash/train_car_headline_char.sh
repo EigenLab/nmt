@@ -1,3 +1,4 @@
+#!/bin/sh
 python -m nmt.nmt  \
    --src=source --tgt=target  \
    --hparams_path=nmt/standard_hparams/car_headline_char.json \
