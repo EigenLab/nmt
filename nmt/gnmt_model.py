@@ -26,6 +26,7 @@ from tensorflow.python.util import nest
 from . import attention_model
 from . import model_helper
 from .utils import misc_utils as utils
+from .utils.attention_utils import CoverageAttentionWrapper,CoverageAttentionWrapperState
 
 __all__ = ["GNMTModel"]
 
@@ -153,8 +154,10 @@ class GNMTModel(attention_model.AttentionModel):
     attention_mechanism = self.attention_mechanism_fn(
         attention_option, num_units, memory, source_sequence_length, self.mode)
 
+    unit_type = "context_lstm" if hparams.context else hparams.unit_type
+
     cell_list = model_helper._cell_list(  # pylint: disable=protected-access
-        unit_type=hparams.unit_type,
+        unit_type=unit_type,
         num_units=num_units,
         num_layers=self.num_decoder_layers,
         num_residual_layers=self.num_decoder_residual_layers,
@@ -172,13 +175,23 @@ class GNMTModel(attention_model.AttentionModel):
     # Only generate alignment in greedy INFER mode.
     alignment_history = (self.mode == tf.contrib.learn.ModeKeys.INFER and
                          beam_width == 0)
-    attention_cell = tf.contrib.seq2seq.AttentionWrapper(
+
+    if hparams.coverage == True:
+      attention_cell = CoverageAttentionWrapper(
         attention_cell,
         attention_mechanism,
         attention_layer_size=None,  # don't use attention layer.
         output_attention=False,
-        alignment_history=alignment_history,
+        alignment_history=False,
         name="attention")
+    else:
+      attention_cell = tf.contrib.seq2seq.AttentionWrapper(
+          attention_cell,
+          attention_mechanism,
+          attention_layer_size=None,  # don't use attention layer.
+          output_attention=False,
+          alignment_history=alignment_history,
+          name="attention")
 
     if attention_architecture == "gnmt":
       cell = GNMTAttentionMultiCell(
@@ -193,7 +206,7 @@ class GNMTModel(attention_model.AttentionModel):
     if hparams.pass_hidden_state:
       decoder_initial_state = tuple(
           zs.clone(cell_state=es)
-          if isinstance(zs, tf.contrib.seq2seq.AttentionWrapperState) else es
+          if (isinstance(zs, tf.contrib.seq2seq.AttentionWrapperState) or isinstance(zs, CoverageAttentionWrapperState)) else es
           for zs, es in zip(
               cell.zero_state(batch_size, dtype), encoder_state))
     else:

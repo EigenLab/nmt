@@ -21,6 +21,7 @@ import tensorflow as tf
 
 from . import model
 from . import model_helper
+from .utils.attention_utils import CoverageBahdanauAttention,CoverageAttentionWrapper
 
 __all__ = ["AttentionModel"]
 
@@ -100,8 +101,9 @@ class AttentionModel(model.Model):
     attention_mechanism = self.attention_mechanism_fn(
         attention_option, num_units, memory, source_sequence_length, self.mode)
 
+    unit_type = "context_lstm" if hparams.context else hparams.unit_type
     cell = model_helper.create_rnn_cell(
-        unit_type=hparams.unit_type,
+        unit_type=unit_type,
         num_units=num_units,
         num_layers=num_layers,
         num_residual_layers=num_residual_layers,
@@ -114,13 +116,22 @@ class AttentionModel(model.Model):
     # Only generate alignment in greedy INFER mode.
     alignment_history = (self.mode == tf.contrib.learn.ModeKeys.INFER and
                          beam_width == 0)
-    cell = tf.contrib.seq2seq.AttentionWrapper(
+    if hparams.coverage == True:
+      cell = CoverageAttentionWrapper(
         cell,
         attention_mechanism,
-        attention_layer_size=num_units,
-        alignment_history=alignment_history,
+        attention_layer_size=num_units,  # don't use attention layer.
         output_attention=hparams.output_attention,
+        alignment_history=False,
         name="attention")
+    else:
+      cell = tf.contrib.seq2seq.AttentionWrapper(
+          cell,
+          attention_mechanism,
+          attention_layer_size=num_units,
+          alignment_history=alignment_history,
+          output_attention=hparams.output_attention,
+          name="attention")
 
     # TODO(thangluong): do we need num_layers, num_gpus?
     cell = tf.contrib.rnn.DeviceWrapper(cell,
@@ -165,6 +176,10 @@ def create_attention_mechanism(attention_option, num_units, memory,
         memory,
         memory_sequence_length=source_sequence_length,
         normalize=True)
+  elif attention_option == 'coverage_bahdanau':
+    attention_mechanism = CoverageBahdanauAttention(num_units,memory,memory_sequence_length=source_sequence_length)
+  elif attention_option == 'normed_coverage_bahdanau':
+    attention_mechanism = CoverageBahdanauAttention(num_units,memory,memory_sequence_length=source_sequence_length, normalize=True)
   else:
     raise ValueError("Unknown attention option %s" % attention_option)
 

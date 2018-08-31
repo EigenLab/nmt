@@ -305,6 +305,11 @@ def add_arguments(parser):
   parser.add_argument("--start_scheduled_sampling_ratio", type=float, default=0.2,
                       help='when to start scheduled sampling')
 
+  parser.add_argument("--coverage", type=bool, default=False,
+                      help='whether using coverage attention')
+  parser.add_argument("--context", type=bool, default=False,
+                      help='whether using context attention')
+
 def create_hparams(flags):
   """Create training hparams."""
   return tf.contrib.training.HParams(
@@ -335,6 +340,8 @@ def create_hparams(flags):
       attention_architecture=flags.attention_architecture,
       output_attention=flags.output_attention,
       pass_hidden_state=flags.pass_hidden_state,
+      coverage = flags.coverage,
+      context = flags.context,
 
       # Train
       optimizer=flags.optimizer,
@@ -547,6 +554,8 @@ def create_or_load_hparams(
     hparams = default_hparams
     hparams = utils.maybe_parse_standard_hparams(
         hparams, hparams_path)
+    print("load standard hp")
+    print(hparams)
     hparams = extend_hparams(hparams)
   else:
     hparams = ensure_compatible_hparams(hparams, default_hparams, hparams_path)
@@ -627,6 +636,8 @@ def run_main(flags, default_hparams, train_fn, inference_fn, target_session=""):
 
 def main(unused_argv):
   default_hparams = create_hparams(FLAGS)
+  print("default hp")
+  print(default_hparams)
   train_fn = train.train
   inference_fn = inference.inference
   run_main(FLAGS, default_hparams, train_fn, inference_fn)

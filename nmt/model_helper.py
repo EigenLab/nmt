@@ -374,6 +374,12 @@ def _single_cell(unit_type, num_units, forget_bias, dropout, mode,
   elif unit_type == "nas":
     utils.print_out("  NASCell", new_line=False)
     single_cell = tf.contrib.rnn.NASCell(num_units)
+  elif unit_type == 'context_lstm':
+    from .utils.attention_utils import ContextLSTMCell
+    utils.print_out("  Context LSTM, forget_bias=%g" % forget_bias, new_line=False)
+    single_cell = ContextLSTMCell(
+        num_units,
+        forget_bias=forget_bias)
   else:
     raise ValueError("Unknown unit type %s!" % unit_type)
 

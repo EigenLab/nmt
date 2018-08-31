@@ -1,5 +1,7 @@
 {
-  "attention": "bahdanau",
+  "attention": "normed_coverage_bahdanau",
+  "coverage": true,
+  "context": false,
   "attention_architecture": "standard",
   "batch_size": 128,
   "colocate_gradients_with_ops": true,
@@ -14,7 +16,7 @@
   "metrics": ["bleu"],
   "num_buckets": 5,
   "num_layers": 2,
-  "num_train_steps": 20000,
+  "num_train_steps": 40000,
   "decay_scheme": "luong234",
   "num_units": 512,
   "optimizer": "sgd",
