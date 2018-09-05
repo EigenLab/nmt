@@ -1,5 +1,19 @@
 ## 如何导出NMT模型做Serving
 
+### Update 0904
+
+目前的版本支持不需要initialize来初始化模型了，极大方便后期的serving。
+
+模型训练和导出的流程如下：
+- 使用tf-1.4版本训练模型，tf-1.5未测试，应该也是可以的。
+- 模型训练完成后，需要使用tf-1.5的版本进行导出，导出时参考export.sh这个脚本，需要设置export_model，export_path和export_version三个参数。
+- 由于使用了tf-1.5后才有的tf.contrib.data.get_single_element api，所以导出时需要tf-1.5版本
+
+TODO: 测试tf-1.5是否work
+
+
+### Old model
+
 建议使用稳定版本的tensorflow比如1.4.1,以及稳定版本的nmt比如tf-1.4分支来训练和导出模型。具体流程如下：
 
 - 先用nmt tf-1.4训练好模型

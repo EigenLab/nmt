@@ -101,7 +101,9 @@ def inference(ckpt,
   else:
     raise ValueError("Unknown model architecture")
   infer_model = model_helper.create_infer_model(model_creator, hparams, scope)
-
+  if hparams.export:
+    export_model_v2(infer_model, ckpt, hparams)
+    exit(0)
   if num_workers == 1:
     single_worker_inference(
         infer_model,
@@ -169,6 +171,46 @@ def export_model(sess, predictions, hparams):
       clear_devices=True)
   builder.save()
   utils.print_out("Done exporting")
+
+
+def export_model_v2(infer_model, ckpt, hparams):
+   with tf.Session(
+      graph=infer_model.graph, config=utils.get_config_proto()) as sess:
+    loaded_infer_model = model_helper.load_model(
+        infer_model.model, ckpt, sess, "infer")
+
+    export_path = os.path.join(hparams.export_path, str(hparams.export_version))
+    builder = tf.saved_model.builder.SavedModelBuilder(export_path)
+
+    inputs_dict = {}
+    inputs_dict['source_tokens'] = tf.saved_model.utils.build_tensor_info(infer_model.src_placeholder)
+
+    outputs_dict = {'output': tf.saved_model.utils.build_tensor_info(infer_model.model.sample_words)}
+    prediction_signature_outputs = tf.saved_model.signature_def_utils.build_signature_def(
+      inputs=inputs_dict,
+      outputs=outputs_dict,
+      method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME)
+    assets = [tf.constant(hparams.src_vocab_file),
+           tf.constant(hparams.tgt_vocab_file)]
+
+    for asset in assets:
+      tf.add_to_collection(tf.GraphKeys.ASSET_FILEPATHS, asset)
+
+    legacy_init_op = tf.group(tf.tables_initializer(), name='legacy_init_op')
+
+    builder.add_meta_graph_and_variables(
+        sess, [tf.saved_model.tag_constants.SERVING],
+        signature_def_map={
+            'predict':
+                prediction_signature_outputs,
+            tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+                prediction_signature_outputs
+        },
+        assets_collection=tf.get_collection(tf.GraphKeys.ASSET_FILEPATHS),
+        legacy_init_op=legacy_init_op,
+        clear_devices=True)
+    builder.save()
+    utils.print_out("Done exporting")
 
 def single_worker_inference(infer_model,
                             ckpt,

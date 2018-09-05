@@ -197,9 +197,10 @@ def create_infer_model(model_creator, hparams, scope=None, extra_args=None):
     iterator = iterator_utils.get_infer_iterator(
         src_dataset,
         src_vocab_table,
-        batch_size=batch_size_placeholder,
+        batch_size=tf.shape(src_placeholder,out_type=tf.int64)[0] if hparams.export else batch_size_placeholder,
         eos=hparams.eos,
-        src_max_len=hparams.src_max_len_infer)
+        src_max_len=hparams.src_max_len_infer,
+        export=hparams.export)
     model = model_creator(
         hparams,
         iterator=iterator,

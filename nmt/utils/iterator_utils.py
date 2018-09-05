@@ -35,7 +35,8 @@ def get_infer_iterator(src_dataset,
                        src_vocab_table,
                        batch_size,
                        eos,
-                       src_max_len=None):
+                       src_max_len=None,
+                       export=False):
   src_eos_id = tf.cast(src_vocab_table.lookup(tf.constant(eos)), tf.int32)
   src_dataset = src_dataset.map(lambda src: tf.string_split([src]).values)
 
@@ -64,10 +65,14 @@ def get_infer_iterator(src_dataset,
             0))  # src_len -- unused
 
   batched_dataset = batching_func(src_dataset)
-  batched_iter = batched_dataset.make_initializable_iterator()
-  (src_ids, src_seq_len) = batched_iter.get_next()
+  if export:
+    batched_iter = tf.contrib.data.get_single_element(batched_dataset)
+    (src_ids, src_seq_len) = batched_iter
+  else:
+    batched_iter = batched_dataset.make_initializable_iterator()
+    (src_ids, src_seq_len) = batched_iter.get_next()
   return BatchedInput(
-      initializer=batched_iter.initializer,
+      initializer=None if export else batched_iter.initializer,
       source=src_ids,
       target_input=None,
       target_output=None,
