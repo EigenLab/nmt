@@ -40,7 +40,13 @@ def add_arguments(parser):
   """Build ArgumentParser."""
   parser.register("type", "bool", lambda v: v.lower() == "true")
 
+  parser.add_argument("--debug", type="bool", nargs="?", const=True,
+                      default=False,
+                      help="Whether to debub model.")
+
   # network
+  parser.add_argument("--num_heads", type=int, default=8, help="Number of heads for multihead attention")
+
   parser.add_argument("--num_units", type=int, default=32, help="Network size.")
   parser.add_argument("--num_layers", type=int, default=2,
                       help="Network depth.")
@@ -65,7 +71,7 @@ def add_arguments(parser):
 
   # attention mechanisms
   parser.add_argument("--attention", type=str, default="", help="""\
-      luong | scaled_luong | bahdanau | normed_bahdanau or set to "" for no
+      luong | scaled_luong | bahdanau | normed_bahdanau | multihead or set to "" for no
       attention\
       """)
   parser.add_argument(
@@ -266,6 +272,8 @@ def add_arguments(parser):
       beam width when using beam search decoder. If 0 (default), use standard
       decoder with greedy helper.\
       """))
+  parser.add_argument("--blocking_n_gram_repeat", type=int, default=3,
+                      help="bolcking n-gram repeat during decoding")
   parser.add_argument("--length_penalty_weight", type=float, default=0.0,
                       help="Length penalty for beam search.")
   parser.add_argument("--sampling_temperature", type=float,
@@ -313,6 +321,7 @@ def add_arguments(parser):
 def create_hparams(flags):
   """Create training hparams."""
   return tf.contrib.training.HParams(
+      debug=flags.debug,
       # Data
       src=flags.src,
       tgt=flags.tgt,
@@ -324,6 +333,7 @@ def create_hparams(flags):
       out_dir=flags.out_dir,
 
       # Networks
+      num_heads=flags.num_heads,
       num_units=flags.num_units,
       num_layers=flags.num_layers,  # Compatible
       num_encoder_layers=(flags.num_encoder_layers or flags.num_layers),
@@ -369,6 +379,7 @@ def create_hparams(flags):
       tgt_max_len_infer=flags.tgt_max_len_infer,
       infer_batch_size=flags.infer_batch_size,
       beam_width=flags.beam_width,
+      blocking_n_gram_repeat=flags.blocking_n_gram_repeat,
       length_penalty_weight=flags.length_penalty_weight,
       sampling_temperature=flags.sampling_temperature,
       num_translations_per_input=flags.num_translations_per_input,

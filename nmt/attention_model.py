@@ -99,7 +99,7 @@ class AttentionModel(model.Model):
       batch_size = self.batch_size
 
     attention_mechanism = self.attention_mechanism_fn(
-        attention_option, num_units, memory, source_sequence_length, self.mode)
+        attention_option, num_units, memory, source_sequence_length, self.mode, hparams.num_heads)
 
     unit_type = "context_lstm" if hparams.context else hparams.unit_type
     cell = model_helper.create_rnn_cell(
@@ -120,18 +120,29 @@ class AttentionModel(model.Model):
       cell = CoverageAttentionWrapper(
         cell,
         attention_mechanism,
-        attention_layer_size=num_units,  # don't use attention layer.
+        attention_layer_size=num_units, 
         output_attention=hparams.output_attention,
         alignment_history=False,
         name="attention")
     else:
-      cell = tf.contrib.seq2seq.AttentionWrapper(
-          cell,
-          attention_mechanism,
-          attention_layer_size=num_units,
-          alignment_history=alignment_history,
-          output_attention=hparams.output_attention,
-          name="attention")
+      from eigen_tensorflow.attention import MultiHeadAttentionWrapper
+      # 兼容老代码
+      if attention_option=='multihead':
+        cell = MultiHeadAttentionWrapper(
+            cell,
+            attention_mechanism,
+            attention_layer_size=num_units,
+            alignment_history=alignment_history,
+            output_attention=hparams.output_attention,
+            multihead=True,
+            name="attention")
+      else:
+        cell = tf.contrib.seq2seq.AttentionWrapper(cell,
+            attention_mechanism,
+            attention_layer_size=num_units,
+            alignment_history=alignment_history,
+            output_attention=hparams.output_attention,
+            name="attention")
 
     # TODO(thangluong): do we need num_layers, num_gpus?
     cell = tf.contrib.rnn.DeviceWrapper(cell,
@@ -153,9 +164,8 @@ class AttentionModel(model.Model):
 
 
 def create_attention_mechanism(attention_option, num_units, memory,
-                               source_sequence_length, mode):
+                               source_sequence_length, mode, num_heads=4):
   """Create attention mechanism based on the attention_option."""
-  del mode  # unused
 
   # Mechanism
   if attention_option == "luong":
@@ -180,6 +190,10 @@ def create_attention_mechanism(attention_option, num_units, memory,
     attention_mechanism = CoverageBahdanauAttention(num_units,memory,memory_sequence_length=source_sequence_length)
   elif attention_option == 'normed_coverage_bahdanau':
     attention_mechanism = CoverageBahdanauAttention(num_units,memory,memory_sequence_length=source_sequence_length, normalize=True)
+  elif attention_option == 'multihead':
+    from eigen_tensorflow.attention import MultiHeadAttention
+    print("Using multi head attention")
+    attention_mechanism = MultiHeadAttention(num_heads,num_units,memory,memory_sequence_length=source_sequence_length, mode=mode)
   else:
     raise ValueError("Unknown attention option %s" % attention_option)
 

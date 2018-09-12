@@ -1,7 +1,7 @@
 {
   "attention": "normed_coverage_bahdanau",
   "coverage": true,
-  "context": false,
+  "context": true,
   "attention_architecture": "standard",
   "batch_size": 128,
   "colocate_gradients_with_ops": true,

@@ -320,6 +320,10 @@ def train(hparams, scope=None, target_session=""):
       num_inter_threads=hparams.num_inter_threads)
   train_sess = tf.Session(
       target=target_session, config=config_proto, graph=train_model.graph)
+  if hparams.debug:
+    from tensorflow.python import debug as tf_debug
+    train_sess = tf_debug.LocalCLIDebugWrapperSession(train_sess)
+    train_sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
   eval_sess = tf.Session(
       target=target_session, config=config_proto, graph=eval_model.graph)
   infer_sess = tf.Session(

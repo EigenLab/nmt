@@ -449,7 +449,9 @@ class BaseModel(object):
         end_token = tgt_eos_id
 
         if beam_width > 0:
-          my_decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+          from eigen_tensorflow.beam_search import NGramBeamSearchDecoder
+          #my_decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+          my_decoder = NGramBeamSearchDecoder(
               cell=cell,
               embedding=self.embedding_decoder,
               start_tokens=start_tokens,
@@ -457,7 +459,8 @@ class BaseModel(object):
               initial_state=decoder_initial_state,
               beam_width=beam_width,
               output_layer=self.output_layer,
-              length_penalty_weight=length_penalty_weight)
+              length_penalty_weight=length_penalty_weight,
+              n_gram_repeat=hparams.blocking_n_gram_repeat)
         else:
           # Helper
           sampling_temperature = hparams.sampling_temperature

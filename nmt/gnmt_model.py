@@ -152,7 +152,7 @@ class GNMTModel(attention_model.AttentionModel):
       batch_size = self.batch_size
 
     attention_mechanism = self.attention_mechanism_fn(
-        attention_option, num_units, memory, source_sequence_length, self.mode)
+        attention_option, num_units, memory, source_sequence_length, self.mode, hparams.num_heads)
 
     unit_type = "context_lstm" if hparams.context else hparams.unit_type
 
@@ -185,13 +185,32 @@ class GNMTModel(attention_model.AttentionModel):
         alignment_history=False,
         name="attention")
     else:
-      attention_cell = tf.contrib.seq2seq.AttentionWrapper(
-          attention_cell,
-          attention_mechanism,
-          attention_layer_size=None,  # don't use attention layer.
-          output_attention=False,
-          alignment_history=alignment_history,
-          name="attention")
+      from eigen_tensorflow.attention import MultiHeadAttentionWrapper
+      # 兼容老代码
+      if attention_option=='multihead':
+        attention_cell = MultiHeadAttentionWrapper(
+            attention_cell,
+            attention_mechanism,
+            attention_layer_size=None,
+            alignment_history=alignment_history,
+            output_attention=False,
+            multihead=True,
+            name="attention")
+      else:
+        attention_cell = tf.contrib.seq2seq.AttentionWrapper(
+            attention_cell,
+            attention_mechanism,
+            attention_layer_size=None,
+            alignment_history=alignment_history,
+            output_attention=False,
+            name="attention")
+      # attention_cell = tf.contrib.seq2seq.AttentionWrapper(
+      #     attention_cell,
+      #     attention_mechanism,
+      #     attention_layer_size=None,  # don't use attention layer.
+      #     output_attention=False,
+      #     alignment_history=alignment_history,
+      #     name="attention")
 
     if attention_architecture == "gnmt":
       cell = GNMTAttentionMultiCell(
