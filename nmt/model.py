@@ -343,8 +343,9 @@ class BaseModel(object):
                           base_gpu=0):
     """Build a multi-layer RNN cell that can be used by encoder."""
 
+    unit_type = 'weight_drop_lstm' if hparams.weight_drop else hparams.unit_type
     return model_helper.create_rnn_cell(
-        unit_type=hparams.unit_type,
+        unit_type=unit_type,
         num_units=hparams.num_units,
         num_layers=num_layers,
         num_residual_layers=num_residual_layers,
@@ -422,8 +423,8 @@ class BaseModel(object):
         my_decoder = tf.contrib.seq2seq.BasicDecoder(
             cell,
             helper,
-            decoder_initial_state,)
-
+            decoder_initial_state)
+          
         # Dynamic decoding
         outputs, final_context_state, _ = tf.contrib.seq2seq.dynamic_decode(
             my_decoder,
@@ -440,7 +441,7 @@ class BaseModel(object):
         #   10% improvements for small models & 20% for larger ones.
         # If memory is a concern, we should apply output_layer per timestep.
         logits = self.output_layer(outputs.rnn_output)
-
+        #logits = outputs.rnn_output
       ## Inference
       else:
         beam_width = hparams.beam_width

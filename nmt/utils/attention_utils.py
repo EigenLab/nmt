@@ -340,6 +340,9 @@ class ContextLSTMCell(tf.contrib.rnn.BasicLSTMCell):
         self.context_layer = tf.layers.Dense(self._num_units,use_bias=False, name='context_layer')
 
 
+    def build(self, inputs_shape):
+        self.built = True
+        
     def call(self, inputs, state):
         """Long short-term memory cell (LSTM).
         Args:

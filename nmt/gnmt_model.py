@@ -91,8 +91,9 @@ class GNMTModel(attention_model.AttentionModel):
           num_bi_residual_layers=0,  # no residual connection
       )
 
+      unit_type = 'weight_drop_lstm' if hparams.weight_drop else hparams.unit_type
       uni_cell = model_helper.create_rnn_cell(
-          unit_type=hparams.unit_type,
+          unit_type=unit_type,
           num_units=hparams.num_units,
           num_layers=num_uni_layers,
           num_residual_layers=self.num_encoder_residual_layers,
@@ -274,6 +275,7 @@ class GNMTAttentionMultiCell(tf.nn.rnn_cell.MultiRNNCell):
       with tf.variable_scope("cell_0_attention"):
         attention_cell = self._cells[0]
         attention_state = state[0]
+        
         cur_inp, new_attention_state = attention_cell(inputs, attention_state)
         new_states.append(new_attention_state)
 

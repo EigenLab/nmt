@@ -317,6 +317,8 @@ def add_arguments(parser):
                       help='whether using coverage attention')
   parser.add_argument("--context", type=bool, default=False,
                       help='whether using context attention')
+  parser.add_argument("--weight_drop", type=bool, default=False,
+                      help='whether using weight drop lstm cell in encoder')
 
 def create_hparams(flags):
   """Create training hparams."""
@@ -352,6 +354,7 @@ def create_hparams(flags):
       pass_hidden_state=flags.pass_hidden_state,
       coverage = flags.coverage,
       context = flags.context,
+      weight_drop = flags.weight_drop,
 
       # Train
       optimizer=flags.optimizer,

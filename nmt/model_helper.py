@@ -381,6 +381,10 @@ def _single_cell(unit_type, num_units, forget_bias, dropout, mode,
     single_cell = ContextLSTMCell(
         num_units,
         forget_bias=forget_bias)
+  elif unit_type == 'weight_drop_lstm':
+    from eigen_tensorflow.rnn import WeightDropLSTMCell
+    utils.print_out("  Weight drop LSTM, weight_keep_drop=%g"%(1-dropout), new_line=False)
+    single_cell = WeightDropLSTMCell(num_units,1-dropout,mode,forget_bias)
   else:
     raise ValueError("Unknown unit type %s!" % unit_type)
 
