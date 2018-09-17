@@ -25,6 +25,7 @@ import tensorflow as tf
 from . import attention_model
 from . import gnmt_model
 from . import inference
+from . import rnmtplus_model
 from . import model as nmt_model
 from . import model_helper
 from .utils import misc_utils as utils
@@ -286,11 +287,14 @@ def train(hparams, scope=None, target_session=""):
   if not hparams.attention:
     model_creator = nmt_model.Model
   else:  # Attention
-    if (hparams.encoder_type == "gnmt" or
+    if hparams.encoder_type == 'rnmt+':
+      model_creator = rnmtplus_model.RNMTPlusModel
+    elif (hparams.encoder_type == "gnmt" or
         hparams.attention_architecture in ["gnmt", "gnmt_v2"]):
       model_creator = gnmt_model.GNMTModel
     elif hparams.attention_architecture == "standard":
       model_creator = attention_model.AttentionModel
+    
     else:
       raise ValueError("Unknown attention architecture %s" %
                        hparams.attention_architecture)

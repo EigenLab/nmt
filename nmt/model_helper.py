@@ -21,12 +21,27 @@ __all__ = [
     "create_eval_model", "create_infer_model",
     "create_emb_for_encoder_and_decoder", "create_rnn_cell", "gradient_clip",
     "create_or_load_model", "load_model", "avg_checkpoints",
-    "compute_perplexity"
+    "compute_perplexity","concat_reduce"
 ]
 
 # If a vocab size is greater than this value, put the embedding on cpu instead
 VOCAB_SIZE_THRESHOLD_CPU = 50000
 
+def concat_reduce(x,y,axis=-1):
+    """Zips :obj:`x` with :obj:`y` and reduces all elements."""
+    if tf.contrib.framework.nest.is_sequence(x):
+      tf.contrib.framework.nest.assert_same_structure(x, y)
+
+      x_flat = tf.contrib.framework.nest.flatten(x)
+      y_flat = tf.contrib.framework.nest.flatten(y)
+
+      flat = []
+      for x_i, y_i in zip(x_flat, y_flat):
+        flat.append(tf.concat([x_i, y_i],axis=axis))
+
+      return tf.contrib.framework.nest.pack_sequence_as(x, flat)
+    else:
+      return tf.concat([x, y],axis=axis)
 
 def get_initializer(init_op, seed=None, init_weight=None):
   """Create an initializer. init_weight is only for uniform."""

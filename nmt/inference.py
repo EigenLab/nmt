@@ -23,6 +23,7 @@ import os
 import tensorflow as tf
 
 from . import attention_model
+from . import rnmtplus_model
 from . import gnmt_model
 from . import model as nmt_model
 from . import model_helper
@@ -94,10 +95,13 @@ def inference(ckpt,
 
   if not hparams.attention:
     model_creator = nmt_model.Model
+  elif hparams.encoder_type == 'rnmt+':
+    model_creator = rnmtplus_model.RNMTPlusModel
   elif hparams.attention_architecture == "standard":
     model_creator = attention_model.AttentionModel
   elif hparams.attention_architecture in ["gnmt", "gnmt_v2"]:
     model_creator = gnmt_model.GNMTModel
+  
   else:
     raise ValueError("Unknown model architecture")
   infer_model = model_helper.create_infer_model(model_creator, hparams, scope)
