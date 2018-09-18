@@ -1,33 +1,8 @@
 # Neural Machine Translation (seq2seq) Tutorial
 
 
-## 说明（很重要）
-
-这是fork google的nmt项目，这个项目主要的目标就是提供通用的seq2seq的训练框架，任何sequence to sequence任务都可以使用本框架进行训练。由于tf的版本不兼容问题，请大家一定要注意！本项目是**基于tf-1.4版本**，**基于tf-1.4版本**，**基于tf-1.4版本**，任何由于版本问题造成的各种异常错误，请先把你的tf版本改为1.4的版本。
-
-这个项目的代码组织的很合理，任何想要自己实现s2s的同学都可以参考这个项目的代码。 我希望大家能够在这个项目的基础上不断提交新的s2s结构，如copy-net，point-net等。任何关于模型的更新都请在下一节中添加说明。
-
-## 保证你的tf版本为1.4！！！！！！
-## 保证你的tf版本为1.4！！！！！！
-## 保证你的tf版本为1.4！！！！！！
-
-## tf-1.5
-
-tf-1.4版本在导出模型时有问题，需要手动修复bug，参考inference.md，1.5跟1.4接口差不多，需要测试一下1.5是否兼容。
-
-## 更新
-- 2018-03-27
-
-  - 添加了scheduled sampling机制，目前只支持linear的sampling，也即随着训练过程不断提高sampling的ratio。我在vi-en上做了一些试验，发现如果采用了sampling的话，需要增加training steps，而且最好等模型先train一段时间后再引入sampling。
-  - 下面是使用bash总train_scheduled_sampling脚本得到的vi-en结果：
-  
-  ```
-  Best bleu, step 17000 lr 0.0625 step-time 0.69s wps 8.14K ppl 25.53 gN 10.88 dev ppl 40.25, dev bleu 20.5, test ppl 37.53, test bleu 22.9, Wed Mar 28 13:44:09 2018
-  ```
-  - 如果使用原始的训练脚本，得到的结果为。可以发现，原始的效果要好1-2个点
-	```
-	Best bleu, step 19000 lr 0.0625 step-time 0.36s wps 15.69K ppl 3.44 gN 6.27 dev ppl 11.60, dev bleu 21.1, test ppl 9.74, test bleu 24.0, Wed Mar 28 16:49:11 2018
-	```
+## 说明
+本项目代码不再维护，迁移到https://github.com/EigenLab/eigen-nmt 项目中，请使用eigen-nmt以获取最新的更新。
   
 *Authors: Thang Luong, Eugene Brevdo, Rui Zhao ([Google Research Blogpost](https://research.googleblog.com/2017/07/building-your-own-neural-machine.html), [Github](https://github.com/tensorflow/nmt))*
 
